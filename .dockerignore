@@ -1,0 +1,11 @@
+_build/
+deps/
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+docker-compose.yml
+node_modules/
+assets/node_modules/
+test/
+priv/static/
