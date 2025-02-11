@@ -73,4 +73,11 @@ defmodule Assovio.Accounts do
     |> Repo.all()
     |> Repo.preload(:following)
   end
+
+  def get_user(id) do
+    Repo.get(User, id)
+    |> Repo.preload(:following)
+  rescue
+    Ecto.Query.CastError -> nil
+  end
 end

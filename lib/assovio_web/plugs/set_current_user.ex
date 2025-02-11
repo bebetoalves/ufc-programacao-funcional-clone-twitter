@@ -1,6 +1,5 @@
 defmodule AssovioWeb.Plugs.SetCurrentUser do
   import Plug.Conn
-  alias Assovio.Repo
   alias Assovio.Accounts
 
   def init(opts), do: opts
@@ -9,12 +8,15 @@ defmodule AssovioWeb.Plugs.SetCurrentUser do
     user_id = get_session(conn, :user_id)
 
     if user_id do
-      user =
-        user_id
-        |> Accounts.get_user!()
-        |> Repo.preload(:following)
+      case Accounts.get_user(user_id) do
+        nil ->
+          conn
+          |> delete_session(:user_id)
+          |> assign(:current_user, nil)
 
-      assign(conn, :current_user, user)
+        user ->
+          assign(conn, :current_user, user)
+      end
     else
       assign(conn, :current_user, nil)
     end
