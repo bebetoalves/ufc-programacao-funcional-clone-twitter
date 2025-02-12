@@ -1,6 +1,7 @@
 defmodule AssovioWeb.UserView do
   use AssovioWeb, :view
   import AssovioWeb.ViewHelpers
+  alias Assovio.{Timeline, Accounts}
 
   def following?(current_user, user) do
     current_user && current_user.id != user.id &&

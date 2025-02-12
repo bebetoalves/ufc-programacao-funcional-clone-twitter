@@ -16,14 +16,14 @@
         <%= if @current_user && @current_user.id != @user.id do %>
           <%= if following?(@current_user, @user) do %>
             <%= link "Deixar de Seguir",
-              to: Routes.user_path(@conn, :unfollow, @user),
-              method: :delete,
-              class: "inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+                to: Routes.user_path(@conn, :unfollow, @user),
+                method: :delete,
+                class: "inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
           <% else %>
             <%= link "Seguir",
-              to: Routes.user_path(@conn, :follow, @user),
-              method: :post,
-              class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+                to: Routes.user_path(@conn, :follow, @user),
+                method: :post,
+                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
           <% end %>
         <% end %>
       </div>
@@ -34,28 +34,124 @@
     <%= for tweet <- @tweets do %>
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <div class="flex items-start space-x-3">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span class="text-white font-medium text-sm">
-                  <%= String.first(tweet.user.name) %>
-                </span>
-              </div>
+          <%= if tweet.retweet do %>
+            <div class="flex items-center text-gray-500 text-xs mb-3">
+              <svg class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.5 3.88l4.432 4.14-1.364 1.14L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.16.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.61 1.364 1.14-4.432 4.14-4.432-4.14 1.364-1.14 2.068 1.61V8c0-1.1-.896-2-2-2z" />
+              </svg>
+              <span class="text-[11px]"><%= tweet.user.name %> reassoviou</span>
             </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center space-x-2">
-                <p class="text-sm font-medium text-gray-900">
-                  <%= tweet.user.name %>
+
+            <!-- Tweet original -->
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
+                  <span class="text-white font-medium text-sm">
+                    <%= String.first(tweet.original_tweet.user.name) %>
+                  </span>
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-2">
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= link tweet.original_tweet.user.name, to: Routes.user_path(@conn, :show, tweet.original_tweet.user) %>
+                  </p>
+                  <span class="text-sm text-gray-500">·</span>
+                  <span class="text-sm text-gray-500">
+                    <%= format_datetime(tweet.original_tweet.inserted_at) %>
+                  </span>
+                </div>
+                <p class="mt-2 text-sm text-gray-900">
+                  <%= tweet.content %>
                 </p>
-                <span class="text-sm text-gray-500">·</span>
-                <span class="text-sm text-gray-500">
-                  <%= format_datetime(tweet.inserted_at) %>
-                </span>
               </div>
-              <p class="mt-2 text-sm text-gray-900">
-                <%= tweet.content %>
-              </p>
             </div>
+          <% else %>
+            <!-- Tweet normal -->
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
+                  <span class="text-white font-medium text-sm">
+                    <%= String.first(tweet.user.name) %>
+                  </span>
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-2">
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= link tweet.user.name, to: Routes.user_path(@conn, :show, tweet.user) %>
+                  </p>
+                  <span class="text-sm text-gray-500">·</span>
+                  <span class="text-sm text-gray-500">
+                    <%= format_datetime(tweet.inserted_at) %>
+                  </span>
+                </div>
+                <p class="mt-2 text-sm text-gray-900">
+                  <%= tweet.content %>
+                </p>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Ações -->
+          <div class="flex items-center mt-3 space-x-8">
+            <!-- Like -->
+            <div class="flex items-center group">
+              <%= if Timeline.liked_by_user?(tweet.id, @current_user.id) do %>
+                <%= link to: Routes.tweet_path(@conn, :unlike, tweet),
+                    method: :delete,
+                    class: "flex items-center text-red-600 hover:text-red-700" do %>
+                  <svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-sm font-medium"><%= Timeline.count_likes(tweet.id) %></span>
+                <% end %>
+              <% else %>
+                <%= link to: Routes.tweet_path(@conn, :like, tweet),
+                    method: :post,
+                    class: "flex items-center text-gray-500 hover:text-red-600" do %>
+                  <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                  <span class="text-sm font-medium"><%= Timeline.count_likes(tweet.id) %></span>
+                <% end %>
+              <% end %>
+            </div>
+
+            <!-- Retweet -->
+            <div class="flex items-center group">
+              <%= if !tweet.retweet && !Timeline.retweeted_by_user?(tweet.id, @current_user.id) do %>
+                <%= link to: Routes.tweet_path(@conn, :retweet, tweet),
+                    method: :post,
+                    class: "flex items-center text-gray-500 hover:text-green-600" do %>
+                  <svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4.5 3.88l4.432 4.14-1.364 1.14L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.16.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.61 1.364 1.14-4.432 4.14-4.432-4.14 1.364-1.14 2.068 1.61V8c0-1.1-.896-2-2-2z" />
+                  </svg>
+                <% end %>
+              <% end %>
+
+              <%= if Timeline.retweeted_by_user?(tweet.id, @current_user.id) do %>
+                <%= link to: Routes.tweet_path(@conn, :undo_retweet, tweet),
+                    method: :delete,
+                    class: "flex items-center text-green-600 hover:text-green-700" do %>
+                  <svg class="h-5 w-5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4.5 3.88l4.432 4.14-1.364 1.14L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.16.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.61 1.364 1.14-4.432 4.14-4.432-4.14 1.364-1.14 2.068 1.61V8c0-1.1-.896-2-2-2z" />
+                  </svg>
+                <% end %>
+              <% end %>
+            </div>
+
+            <!-- Delete -->
+            <%= if !tweet.retweet && tweet.user_id == @current_user.id do %>
+              <%= link to: Routes.tweet_path(@conn, :delete, tweet),
+                  method: :delete,
+                  data: [confirm: "Tem certeza que deseja apagar este tweet?"],
+                  class: "flex items-center text-gray-500 hover:text-red-600" do %>
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              <% end %>
+            <% end %>
           </div>
         </div>
       </div>

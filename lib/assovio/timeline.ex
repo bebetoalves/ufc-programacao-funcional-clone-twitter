@@ -24,7 +24,7 @@ defmodule Assovio.Timeline do
     Tweet
     |> where(user_id: ^user_id)
     |> order_by(desc: :inserted_at)
-    |> preload(:user)
+    |> preload([:user, :likes, original_tweet: :user])
     |> Repo.all()
   end
 
