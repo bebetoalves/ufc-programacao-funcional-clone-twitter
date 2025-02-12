@@ -21,10 +21,11 @@ defmodule Assovio.Accounts.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:name, :email, :password])
-    |> validate_required([:name, :email, :password])
-    |> validate_length(:password, min: 6)
-    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/)
-    |> unique_constraint(:email)
+    # Mensagem em português
+    |> validate_required([:name, :email, :password], message: "Este campo não pode ficar em branco.")
+    |> validate_length(:password, min: 6, message: "Este campo deve ter pelo menos %{count} caracteres.")
+    |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "Este e-mail não é válido.")
+    |> unique_constraint(:email, message: "Este e-mail já está em uso.")
     |> put_password_hash()
   end
 
