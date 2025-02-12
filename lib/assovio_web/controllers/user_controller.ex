@@ -36,7 +36,7 @@ defmodule AssovioWeb.UserController do
         redirect(conn, to: Routes.user_path(conn, :show, user_to_follow))
 
       {:error, _} ->
-        put_flash(conn, :error, "Erro ao seguir usuário")
+        put_flash(conn, :error, "Erro ao seguir usuário!")
         redirect(conn, to: Routes.user_path(conn, :show, user_to_follow))
     end
   end
@@ -57,12 +57,12 @@ defmodule AssovioWeb.UserController do
     case Accounts.unfollow_user(conn.assigns.current_user, user_to_unfollow) do
       {:ok, _user} ->
         conn
-        |> put_flash(:info, "Você deixou de seguir #{user_to_unfollow.name}")
+        |> put_flash(:info, "Você deixou de seguir #{user_to_unfollow.name}!")
         |> redirect(to: Routes.user_path(conn, :show, user_to_unfollow))
 
       {:error, _changeset} ->
         conn
-        |> put_flash(:error, "Não foi possível deixar de seguir este usuário")
+        |> put_flash(:error, "Não foi possível deixar de seguir este usuário!")
         |> redirect(to: Routes.user_path(conn, :show, user_to_unfollow))
     end
   end

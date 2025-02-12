@@ -29,10 +29,12 @@ defmodule Assovio.Timeline do
   end
 
   def list_timeline_tweets(user) do
+    following_ids = Enum.map(user.following, & &1.id)
+
     Tweet
-    |> where([t], t.user_id in ^Enum.map(user.following, & &1.id) or t.user_id == ^user.id)
+    |> preload([:user, :likes, original_tweet: :user])
+    |> where([t], t.user_id in ^following_ids or t.user_id == ^user.id)
     |> order_by(desc: :inserted_at)
-    |> preload([:user, :likes])
     |> Repo.all()
   end
 
@@ -58,5 +60,45 @@ defmodule Assovio.Timeline do
   def count_likes(tweet_id) do
     from(l in Like, where: l.tweet_id == ^tweet_id)
     |> Repo.aggregate(:count)
+  end
+
+  def retweet(user_id, original_tweet_id) do
+    original_tweet = get_tweet!(original_tweet_id)
+
+    %Tweet{}
+    |> Tweet.changeset(%{
+      content: original_tweet.content,
+      user_id: user_id,
+      original_tweet_id: original_tweet_id,
+      retweet: true
+    })
+    |> Repo.insert()
+  end
+
+  def undo_retweet(user_id, original_tweet_id) do
+    from(t in Tweet,
+      where:
+        t.user_id == ^user_id and
+          t.original_tweet_id == ^original_tweet_id and
+          t.retweet == true
+    )
+    |> Repo.delete_all()
+  end
+
+  def retweeted_by_user?(original_tweet_id, user_id) do
+    query =
+      from t in Tweet,
+        where:
+          t.user_id == ^user_id and
+            t.original_tweet_id == ^original_tweet_id and
+            t.retweet == true
+
+    Repo.exists?(query)
+  end
+
+  def get_tweet!(id), do: Repo.get!(Tweet, id)
+
+  def delete_tweet(%Tweet{} = tweet) do
+    Repo.delete(tweet)
   end
 end

@@ -16,7 +16,7 @@ defmodule AssovioWeb.SessionController do
 
       {:error, _reason} ->
         conn
-        |> put_flash(:error, "Email ou senha inválidos")
+        |> put_flash(:error, "Email ou senha inválidos!")
         |> render("new.html")
     end
   end
