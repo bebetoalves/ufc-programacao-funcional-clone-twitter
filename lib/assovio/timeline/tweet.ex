@@ -5,6 +5,7 @@ defmodule Assovio.Timeline.Tweet do
   schema "tweets" do
     field :content, :string
     belongs_to :user, Assovio.Accounts.User
+    has_many :likes, Assovio.Timeline.Like
 
     timestamps()
   end

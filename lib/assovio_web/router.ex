@@ -23,5 +23,8 @@ defmodule AssovioWeb.Router do
     delete "/sessions", SessionController, :delete
 
     resources "/tweets", TweetController, only: [:create]
+
+    post "/tweets/:id/like", TweetController, :like
+    delete "/tweets/:id/unlike", TweetController, :unlike
   end
 end
