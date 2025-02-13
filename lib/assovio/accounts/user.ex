@@ -21,7 +21,6 @@ defmodule Assovio.Accounts.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:name, :email, :password])
-    # Mensagem em português
     |> validate_required([:name, :email, :password],
       message: "Este campo não pode ficar em branco."
     )
